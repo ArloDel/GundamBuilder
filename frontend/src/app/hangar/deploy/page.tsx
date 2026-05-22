@@ -21,6 +21,39 @@ export default function DeployHangarPage() {
   const currentMultiplier = multiplier[buildType as keyof typeof multiplier] || 1;
   const projectedXP = Math.floor(currentBase * currentMultiplier);
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!kitName) return alert("Please enter a kit name.");
+    
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/builds", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({
+          kit_name: kitName,
+          grade: grade,
+          build_type: buildType,
+          base_xp: currentBase,
+          projected_xp: projectedXP
+        })
+      });
+      
+      if (res.ok) {
+        const data = await res.json();
+        alert(`Build deployed successfully! Pilot XP is now: ${data.user_xp}`);
+        setKitName("");
+      } else {
+        alert("Failed to deploy build.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error connecting to server.");
+    }
+  };
+
   return (
     <main className="pt-24 px-margin-mobile md:px-margin-desktop pb-24 md:pb-32 max-w-4xl mx-auto">
       <div className="flex items-center gap-3 mb-8">
@@ -31,7 +64,7 @@ export default function DeployHangarPage() {
       <div className="hud-border bg-surface-container-low p-panel-padding relative">
         <div className="absolute top-4 right-4 font-data-display text-label-sm text-primary/50">SYS.LOG // DEPLOYMENT</div>
         
-        <form className="flex flex-col gap-8 mt-4" onSubmit={(e) => e.preventDefault()}>
+        <form className="flex flex-col gap-8 mt-4" onSubmit={handleSubmit}>
           
           {/* Kit Identification */}
           <section className="flex flex-col gap-4">
