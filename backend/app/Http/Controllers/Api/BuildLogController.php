@@ -10,25 +10,15 @@ use App\Models\GunplaMasterKit;
 
 class BuildLogController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $builds = BuildLog::with(['kit', 'user'])->latest()->get();
+        $builds = $request->user()->buildLogs()->with('kit')->latest()->get();
         return response()->json($builds);
     }
 
     public function store(Request $request)
     {
-        // For demonstration purposes without auth, we'll find or create a dummy user
-        $user = User::firstOrCreate(
-            ['email' => 'pilot@gundambuilder.io'],
-            [
-                'username' => 'Amuro_R',
-                'password' => bcrypt('password'),
-                'faction' => 'Earth Federation',
-                'current_xp' => 142850,
-                'level' => 10
-            ]
-        );
+        $user = $request->user();
 
         // Map frontend grade to database enum
         $grade = $request->grade;

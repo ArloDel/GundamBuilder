@@ -25,12 +25,19 @@ export default function DeployHangarPage() {
     e.preventDefault();
     if (!kitName) return alert("Please enter a kit name.");
     
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
     try {
       const res = await fetch("http://127.0.0.1:8000/api/builds", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`
         },
         body: JSON.stringify({
           kit_name: kitName,
@@ -45,6 +52,9 @@ export default function DeployHangarPage() {
         const data = await res.json();
         alert(`Build deployed successfully! Pilot XP is now: ${data.user_xp}`);
         setKitName("");
+      } else if (res.status === 401) {
+        localStorage.removeItem("auth_token");
+        window.location.href = "/login";
       } else {
         alert("Failed to deploy build.");
       }

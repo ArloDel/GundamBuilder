@@ -1,7 +1,46 @@
-import Image from "next/image";
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function TopAppBar() {
+  const [user, setUser] = useState<any>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const userData = localStorage.getItem("user");
+    if (userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }, []);
+
+  const handleLogout = async () => {
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+      try {
+        await fetch("http://127.0.0.1:8000/api/logout", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+      } catch (e) {
+        console.error("Logout failed", e);
+      }
+    }
+    
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("user");
+    setUser(null);
+    window.location.href = "/";
+  };
+
   return (
     <header className="fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 bg-background/80 backdrop-blur-md border-b border-outline-variant shadow-[0_0_15px_rgba(168,200,255,0.2)]">
       <div className="flex items-center gap-4">
@@ -20,15 +59,24 @@ export default function TopAppBar() {
           <span className="material-symbols-outlined text-on-surface-variant text-sm mr-2">search</span>
           <input className="bg-transparent border-none text-on-surface text-sm focus:ring-0 w-32 placeholder:text-on-surface-variant/50 font-data-display outline-none" placeholder="Search Data..." type="text" />
         </div>
-        <button className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-primary-container/10">
-          <span className="material-symbols-outlined">notifications</span>
-        </button>
-        <button className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-primary-container/10">
-          <span className="material-symbols-outlined">settings</span>
-        </button>
-        <div className="w-8 h-8 rounded-full bg-surface-container-highest border border-primary overflow-hidden ml-2 flex items-center justify-center">
-          <img alt="Pilot Profile Avatar" className="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHfHJx9dejHOruHqNvrJfU73Xhr_N7KKSp5RAac04ZqxkLelulHB2IREHHg6djkRhf9QW6uRkT0AYqN1IRqlSII72HxOUNBU5DfoY6Pg0NNfZdkiEBL_lXmQArFBmji1fzsoR2j-8N2YgYZ_vmyntqF21gXImPfXkL8TpLcxnGu9GnBY5fstua5HMK3wWQ728vgNIUt8GeWBlH89roqwNQ3U0uBrcIoRh6semh0s12AKG0Br0h_DDbI1CZ1Ro5WLkDlSljsEIG0XZa" />
-        </div>
+        
+        {user ? (
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex flex-col items-end">
+              <span className="text-sm font-data-display text-primary uppercase">{user.username}</span>
+              <span className="text-xs text-on-surface-variant font-data-display">{user.current_xp} XP</span>
+            </div>
+            <button onClick={handleLogout} className="text-error hover:text-error/80 transition-colors p-2 rounded-full hover:bg-error/10 ml-2" title="Log Out">
+              <span className="material-symbols-outlined">logout</span>
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 ml-2">
+            <Link href="/login" className="text-sm font-data-display text-on-surface hover:text-primary uppercase transition-colors">Login</Link>
+            <span className="text-outline-variant">/</span>
+            <Link href="/register" className="text-sm font-data-display text-primary hover:text-primary-fixed uppercase transition-colors">Enlist</Link>
+          </div>
+        )}
       </div>
     </header>
   );

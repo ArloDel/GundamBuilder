@@ -20,12 +20,26 @@ export default function HangarPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const token = localStorage.getItem("auth_token");
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
     const fetchBuilds = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/builds");
+        const res = await fetch("http://127.0.0.1:8000/api/builds", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
         if (res.ok) {
           const data = await res.json();
           setBuilds(data);
+        } else if (res.status === 401) {
+          localStorage.removeItem("auth_token");
+          window.location.href = "/login";
         }
       } catch (error) {
         console.error("Failed to fetch builds", error);
