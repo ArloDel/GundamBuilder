@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\BuildLogController;
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LeaderboardController;
+use App\Http\Controllers\Api\GunplaKitController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -19,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user();
     });
     
+    Route::get('/kits', [GunplaKitController::class, 'index']);
     Route::get('/builds', [BuildLogController::class, 'index']);
     Route::post('/builds', [BuildLogController::class, 'store']);
 });

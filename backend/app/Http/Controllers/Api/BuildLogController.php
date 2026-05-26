@@ -24,10 +24,14 @@ class BuildLogController extends Controller
         $grade = $request->grade;
         if ($grade === 'MegaSize') $grade = 'PG';
 
-        // Find or create a dummy kit based on the model_name and grade
-        $kit = GunplaMasterKit::firstOrCreate(
-            ['model_name' => $request->kit_name, 'grade' => $grade]
-        );
+        // Check if kit_id is provided, otherwise find or create by name/grade
+        if ($request->has('kit_id') && $request->kit_id) {
+            $kit = GunplaMasterKit::findOrFail($request->kit_id);
+        } else {
+            $kit = GunplaMasterKit::firstOrCreate(
+                ['model_name' => $request->kit_name, 'grade' => $grade]
+            );
+        }
 
         // Map frontend build type to database enum
         $buildType = $request->build_type;
